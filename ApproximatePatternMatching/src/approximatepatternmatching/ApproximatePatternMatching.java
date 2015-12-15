@@ -1,32 +1,51 @@
 package approximatepatternmatching;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class ApproximatePatternMatching {
 
-    static int patternCounter(String pattern, String sequence, int maxMutations) {
+    static String generateRandomMotif(List sequences, int motifSize) {
+        String motif = "";
+        String sequence;
+        int startAt;
+
+        sequence = sequences.get(ThreadLocalRandom.current().nextInt(0, sequences.size())).toString();
+        startAt = ThreadLocalRandom.current().nextInt(0, sequence.length() - motifSize);
+
+        for (int i = startAt; i < startAt + motifSize; i++) {
+            motif += (String.valueOf(sequence.charAt(i)));
+        }
+
+        return motif;
+    }
+
+    static int patternCounter(String pattern, String sequence, int maxMutations, int motifSize) {
         int occurrences = 0;
         int errors;
         int i, j;
 
         for (i = 0; i < sequence.length(); i++) {
-
-            if (i + 2 >= sequence.length()) {
+            
+            //If exceeds sequence size, exit loop
+            if (i + motifSize >= sequence.length()) {
                 break;
             }
 
             errors = 0;
             j = 0;
-            while (j < pattern.length()) {
-                if (errors > maxMutations) {
-                    break;
-                }
-
+            
+            //Compares one character at a time
+            while (j < pattern.length() && errors <= maxMutations) {
                 if (pattern.charAt(j) != sequence.charAt(i + j)) {
                     errors += 1;
                 }
                 j++;
-
             }
 
             if (errors <= maxMutations) {
@@ -36,18 +55,62 @@ public class ApproximatePatternMatching {
         return occurrences;
     }
 
+    @SuppressWarnings("empty-statement")
     public static void main(String[] args) {
-        String pattern, sequence;
-        int occurrences, maxMutations;
-        Scanner reader = new Scanner(System.in);
+        String pattern;
+        int score = 0;
+        int occurrences = 0;
+        String motif = "";
 
-        System.out.println("Pattern, sequence, maximum mutations");
-        pattern = reader.nextLine();
-        sequence = reader.nextLine();
-        maxMutations = reader.nextInt();
+        Scanner input = new Scanner(System.in);
+        String filename;
+        List<String> sequences = new ArrayList<>();
+        int iterations = 10000;
+        int maxMutations = 2;
+        int motifSize = 8;
+        String line;
 
-        //Counts number of occurrences parts of "sequence" match "pattern", with "maxMutations" number of differences
-        occurrences = patternCounter(pattern, sequence, maxMutations);
-        System.out.println("Matches: " + occurrences);
+        System.out.print("File name: ");
+        filename = input.nextLine();
+        File file = new File(filename);
+        Path filePath = Paths.get(file.toURI());
+
+        try {
+
+            Scanner filereader = new Scanner(filePath);
+
+            while ((line = filereader.nextLine()) != null && (line.length() == 0)) ;
+            while ((line = filereader.nextLine()) != null && (line.length() == 0)) ;
+            while ((line = filereader.nextLine()) != null && (line.length() == 0)) ;;
+
+            while (filereader.hasNext()) {
+                line = filereader.nextLine();
+                if (line != null && line.length() != 0) {
+                    sequences.add(line);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        System.out.println(sequences);
+
+        for (int i = 0; i < iterations; i++) {
+            pattern = generateRandomMotif(sequences, motifSize);
+            occurrences = 0;
+
+            //Counts number of times parts of "sequence" match "pattern", with "maxMutations" differences for each string in "sequences"
+            for (String sequence : sequences) {
+                occurrences += patternCounter(pattern, sequence, maxMutations, motifSize);
+            }
+
+            if (occurrences > score) {
+                motif = pattern;
+                score = occurrences;
+            }
+        }
+
+        System.out.println("Pattern: " + motif);
+        System.out.println("Matches: " + score);
     }
 }
