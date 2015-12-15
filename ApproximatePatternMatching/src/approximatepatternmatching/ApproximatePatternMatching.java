@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -14,10 +15,11 @@ public class ApproximatePatternMatching {
         String motif = "";
         String sequence;
         int startAt;
+        Random ran = new Random();
 
-        sequence = sequences.get(ThreadLocalRandom.current().nextInt(0, sequences.size())).toString();
-        startAt = ThreadLocalRandom.current().nextInt(0, sequence.length() - motifSize);
-
+        sequence = sequences.get((ThreadLocalRandom.current().nextInt(0, sequences.size()))).toString();
+        startAt = (ThreadLocalRandom.current().nextInt(0, sequence.length() - motifSize));
+        
         for (int i = startAt; i < startAt + motifSize; i++) {
             motif += (String.valueOf(sequence.charAt(i)));
         }
@@ -65,7 +67,7 @@ public class ApproximatePatternMatching {
         Scanner input = new Scanner(System.in);
         String filename;
         List<String> sequences = new ArrayList<>();
-        int iterations = 10000;
+        int iterations = 1000;
         int maxMutations = 2;
         int motifSize = 8;
         String line;
